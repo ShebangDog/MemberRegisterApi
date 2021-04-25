@@ -65,8 +65,7 @@ func (db *DefaultLocalDatabase) SignUp(member model.Member) (sql.Result, error) 
 func (db *DefaultLocalDatabase) GetAllMembers() []model.Member {
 	query := "SELECT * FROM member"
 
-	var studentId string
-	var name string
+	var member model.Member
 	var members []model.Member
 
 	rows, err := db.query(query)
@@ -74,11 +73,10 @@ func (db *DefaultLocalDatabase) GetAllMembers() []model.Member {
 		return nil
 	}
 	for rows.Next() {
-		err := rows.Scan(&studentId, &name)
+		err := rows.Scan(&member.StudentId, &member.Name)
 		if err != nil {
 			return nil
 		}
-		member := model.Member{StudentId: studentId, Name: name}
 		members = append(members, member)
 	}
 
