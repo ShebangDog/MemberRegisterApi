@@ -51,7 +51,7 @@ func NewLocalDatabase() *DefaultLocalDatabase {
 	return instance
 }
 
-func (db DefaultLocalDatabase) SignUp(member model.Member) (sql.Result, error) {
+func (db *DefaultLocalDatabase) SignUp(member model.Member) (sql.Result, error) {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (student_id, name) VALUES("%s", "%s") `,
 		db.memberTable,
@@ -62,7 +62,7 @@ func (db DefaultLocalDatabase) SignUp(member model.Member) (sql.Result, error) {
 	return db.execDb(query)
 }
 
-func (db DefaultLocalDatabase) GetAllMembers() []model.Member {
+func (db *DefaultLocalDatabase) GetAllMembers() []model.Member {
 	query := "SELECT * FROM member"
 
 	var studentId string
@@ -85,7 +85,7 @@ func (db DefaultLocalDatabase) GetAllMembers() []model.Member {
 	return members
 }
 
-func (db DefaultLocalDatabase) GetMemberById(studentId string) *model.Member {
+func (db *DefaultLocalDatabase) GetMemberById(studentId string) *model.Member {
 	query := fmt.Sprintf(
 		`SELECT * FROM %s WHERE student_id = '%s'`,
 		db.memberTable,
@@ -109,7 +109,7 @@ func (db DefaultLocalDatabase) GetMemberById(studentId string) *model.Member {
 	return nil
 }
 
-func (db DefaultLocalDatabase) UpdateMember(member model.Member) (sql.Result, error) {
+func (db *DefaultLocalDatabase) UpdateMember(member model.Member) (sql.Result, error) {
 	query := fmt.Sprintf(
 		`UPDATE %s SET name = '%s' WHERE student_id = '%s'`,
 		db.memberTable,
@@ -120,7 +120,7 @@ func (db DefaultLocalDatabase) UpdateMember(member model.Member) (sql.Result, er
 	return db.execDb(query)
 }
 
-func (db DefaultLocalDatabase) DeleteMember(studentId string) (sql.Result, error) {
+func (db *DefaultLocalDatabase) DeleteMember(studentId string) (sql.Result, error) {
 	query := fmt.Sprintf(
 		`DELETE FROM %s WHERE student_id = '%s'`,
 		db.memberTable,
@@ -130,7 +130,7 @@ func (db DefaultLocalDatabase) DeleteMember(studentId string) (sql.Result, error
 	return db.execDb(query)
 }
 
-func (db DefaultLocalDatabase) createMemberTable() {
+func (db *DefaultLocalDatabase) createMemberTable() {
 	query := fmt.Sprintf(
 		`CREATE TABLE IF NOT EXISTS %s (student_id string PRIMARY KEY, name string NOT NULL)`,
 		db.memberTable,
@@ -139,7 +139,7 @@ func (db DefaultLocalDatabase) createMemberTable() {
 	db.execDb(query)
 }
 
-func (db DefaultLocalDatabase) createLogTable() {
+func (db *DefaultLocalDatabase) createLogTable() {
 	query := fmt.Sprintf(
 		`CREATE TABLE IF NOT EXISTS %s (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id STRING NOT NULL, event STRING NOT NULL, datatime STRING NOT NULL)`,
 		db.logTable,
@@ -148,10 +148,10 @@ func (db DefaultLocalDatabase) createLogTable() {
 	db.execDb(query)
 }
 
-func (db DefaultLocalDatabase) execDb(query string) (sql.Result, error) {
+func (db *DefaultLocalDatabase) execDb(query string) (sql.Result, error) {
 	return db.database.Exec(query)
 }
 
-func (db DefaultLocalDatabase) query(query string) (*sql.Rows, error) {
+func (db *DefaultLocalDatabase) query(query string) (*sql.Rows, error) {
 	return db.database.Query(query)
 }
