@@ -2,7 +2,7 @@ package model
 
 type (
 	Event interface {
-		value() string
+		Value() string
 	}
 
 	register struct{}
@@ -27,18 +27,18 @@ func Exit() Event {
 	return exit{}
 }
 
-func (r register) value() string {
+func (r register) Value() string {
 	return "register"
 }
 
-func (d delete) value() string {
+func (d delete) Value() string {
 	return "delete"
 }
 
-func (e entry) value() string {
+func (e entry) Value() string {
 	return "entry"
 }
 
-func (e exit) value() string {
+func (e exit) Value() string {
 	return "exit"
 }
