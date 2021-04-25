@@ -141,7 +141,7 @@ func (db *DefaultLocalDatabase) createMemberTable() {
 
 func (db *DefaultLocalDatabase) createLogTable() {
 	query := fmt.Sprintf(
-		`CREATE TABLE IF NOT EXISTS %s (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id STRING NOT NULL, event STRING NOT NULL, datatime STRING NOT NULL)`,
+		`CREATE TABLE IF NOT EXISTS %s (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id STRING NOT NULL, event STRING NOT NULL, date STRING NOT NULL)`,
 		db.logTable,
 	)
 
