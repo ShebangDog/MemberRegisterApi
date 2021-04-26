@@ -5,26 +5,42 @@ type (
 		Value() string
 	}
 
+	NoSuchEventError struct {
+		msg string
+	}
+
 	register struct{}
 	delete   struct{}
 	entry    struct{}
 	exit     struct{}
 )
 
+var eventList = []Event{Register(), Delete(), Entry(), Exit()}
+
+func ParseEvent(str string) (Event, error) {
+	for _, event := range eventList {
+		if event.Value() == str {
+			return event, nil
+		}
+	}
+
+	return nil, &NoSuchEventError{msg: "no such event error"}
+}
+
 func Register() Event {
-	return register{}
+	return &register{}
 }
 
 func Delete() Event {
-	return delete{}
+	return &delete{}
 }
 
 func Entry() Event {
-	return entry{}
+	return &entry{}
 }
 
 func Exit() Event {
-	return exit{}
+	return &exit{}
 }
 
 func (r register) Value() string {
@@ -41,4 +57,8 @@ func (e entry) Value() string {
 
 func (e exit) Value() string {
 	return "exit"
+}
+
+func (e *NoSuchEventError) Error() string {
+	return e.msg
 }
