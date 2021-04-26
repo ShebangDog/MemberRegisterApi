@@ -26,7 +26,7 @@ func StartWebServer() error {
 	router.HandleFunc("/members/{student_id}", updateMember).Methods("PUT")
 	router.HandleFunc("/members/{student_id}", deleteMember).Methods("DELETE")
 
-	router.HandleFunc("/log", takeLog).Methods("POST")
+	router.HandleFunc("/logs", takeLog).Methods("POST")
 	router.HandleFunc("/logs", fetchAllLogs).Methods("GET")
 
 	return http.ListenAndServe(fmt.Sprintf(":%d", 8080), router)
