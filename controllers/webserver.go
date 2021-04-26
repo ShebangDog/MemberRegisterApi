@@ -19,7 +19,7 @@ func StartWebServer() error {
 
 	router.HandleFunc("/", rootPage).Methods("GET")
 
-	router.HandleFunc("/member", signUpMember).Methods("POST")
+	router.HandleFunc("/members", signUpMember).Methods("POST")
 	router.HandleFunc("/members", fetchAllMembers).Methods("GET")
 
 	router.HandleFunc("/member/{student_id}", fetchMemberById).Methods("GET")
