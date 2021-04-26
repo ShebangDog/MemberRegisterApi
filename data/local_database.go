@@ -27,9 +27,9 @@ type (
 
 	//Event(interface)の都合でScanできないためdtoを使用してmodelへ変換する
 	//row => modelができないからdtoを使用してmodelへ変換する
-	//row => eventDTO => model
+	//row => logDTO => model
 	//https://stackoverflow.com/questions/57827120/golang-sql-scan-interface-scan-into-interface-field-type
-	eventDTO struct {
+	logDTO struct {
 		Id        string
 		StudentId string
 		Event     string
@@ -158,7 +158,7 @@ func (db *DefaultLocalDatabase) GetAllLogs() []model.Log {
 		`SELECT * FROM %s`, db.logTable,
 	)
 
-	var d eventDTO
+	var d logDTO
 	var logs []model.Log
 
 	rows, _ := db.query(query)
@@ -179,7 +179,7 @@ func (db *DefaultLocalDatabase) GetLogById(id int) *model.Log {
 		id,
 	)
 
-	var d eventDTO
+	var d logDTO
 
 	rows, _ := db.query(query)
 	for rows.Next() {
@@ -218,7 +218,7 @@ func (db *DefaultLocalDatabase) query(query string) (*sql.Rows, error) {
 	return db.database.Query(query)
 }
 
-func (d eventDTO) toModel() model.Log {
+func (d logDTO) toModel() model.Log {
 	event, _ := model.ParseEvent(d.Event)
 	date, _ := model.ParseDate(d.Date)
 
