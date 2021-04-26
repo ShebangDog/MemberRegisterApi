@@ -22,9 +22,9 @@ func StartWebServer() error {
 	router.HandleFunc("/members", signUpMember).Methods("POST")
 	router.HandleFunc("/members", fetchAllMembers).Methods("GET")
 
-	router.HandleFunc("/member/{student_id}", fetchMemberById).Methods("GET")
-	router.HandleFunc("/member/{student_id}", updateMember).Methods("PUT")
-	router.HandleFunc("/member/{student_id}", deleteMember).Methods("DELETE")
+	router.HandleFunc("/members/{student_id}", fetchMemberById).Methods("GET")
+	router.HandleFunc("/members/{student_id}", updateMember).Methods("PUT")
+	router.HandleFunc("/members/{student_id}", deleteMember).Methods("DELETE")
 
 	router.HandleFunc("/log", takeLog).Methods("POST")
 	router.HandleFunc("/logs", fetchAllLogs).Methods("GET")
