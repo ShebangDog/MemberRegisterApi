@@ -26,6 +26,9 @@ func StartWebServer() error {
 	router.HandleFunc("/member/{student_id}", updateMember).Methods("PUT")
 	router.HandleFunc("/member/{student_id}", deleteMember).Methods("DELETE")
 
+	router.HandleFunc("/log", takeLog).Methods("POST")
+	router.HandleFunc("/logs", fetchAllLogs).Methods("GET")
+
 	return http.ListenAndServe(fmt.Sprintf(":%d", 8080), router)
 }
 
@@ -110,4 +113,29 @@ func deleteMember(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(members)
+}
+
+func fetchAllLogs(w http.ResponseWriter, r *http.Request) {
+	logs := localDatabase.GetAllLogs()
+
+	if logs == nil {
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(logs)
+}
+
+func takeLog(w http.ResponseWriter, r *http.Request) {
+	var l model.Log
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	err := json.Unmarshal(reqBody, &l)
+	if err != nil {
+		return
+	}
+
+	if result, err := localDatabase.TakeLog(l); err != nil {
+		print(result, err.Error())
+		return
+	}
 }

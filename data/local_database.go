@@ -14,6 +14,8 @@ type (
 		GetMemberById(studentId string) *model.Member
 		UpdateMember(member model.Member) (sql.Result, error)
 		DeleteMember(studentId string) (sql.Result, error)
+		TakeLog(log model.Log) (sql.Result, error)
+		GetAllLogs() []model.Log
 	}
 
 	DefaultLocalDatabase struct {
@@ -21,6 +23,17 @@ type (
 		memberTable string
 		logTable    string
 		tables      []string
+	}
+
+	//Event(interface)の都合でScanできないためdtoを使用してmodelへ変換する
+	//row => modelができないからdtoを使用してmodelへ変換する
+	//row => dto => model
+	//https://stackoverflow.com/questions/57827120/golang-sql-scan-interface-scan-into-interface-field-type
+	dto struct {
+		Id        string
+		StudentId string
+		Event     string
+		Date      string
 	}
 )
 
@@ -51,7 +64,7 @@ func NewLocalDatabase() *DefaultLocalDatabase {
 	return instance
 }
 
-func (db DefaultLocalDatabase) SignUp(member model.Member) (sql.Result, error) {
+func (db *DefaultLocalDatabase) SignUp(member model.Member) (sql.Result, error) {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (student_id, name) VALUES("%s", "%s") `,
 		db.memberTable,
@@ -62,11 +75,10 @@ func (db DefaultLocalDatabase) SignUp(member model.Member) (sql.Result, error) {
 	return db.execDb(query)
 }
 
-func (db DefaultLocalDatabase) GetAllMembers() []model.Member {
+func (db *DefaultLocalDatabase) GetAllMembers() []model.Member {
 	query := "SELECT * FROM member"
 
-	var studentId string
-	var name string
+	var member model.Member
 	var members []model.Member
 
 	rows, err := db.query(query)
@@ -74,18 +86,17 @@ func (db DefaultLocalDatabase) GetAllMembers() []model.Member {
 		return nil
 	}
 	for rows.Next() {
-		err := rows.Scan(&studentId, &name)
+		err := rows.Scan(&member.StudentId, &member.Name)
 		if err != nil {
 			return nil
 		}
-		member := model.Member{StudentId: studentId, Name: name}
 		members = append(members, member)
 	}
 
 	return members
 }
 
-func (db DefaultLocalDatabase) GetMemberById(studentId string) *model.Member {
+func (db *DefaultLocalDatabase) GetMemberById(studentId string) *model.Member {
 	query := fmt.Sprintf(
 		`SELECT * FROM %s WHERE student_id = '%s'`,
 		db.memberTable,
@@ -109,7 +120,7 @@ func (db DefaultLocalDatabase) GetMemberById(studentId string) *model.Member {
 	return nil
 }
 
-func (db DefaultLocalDatabase) UpdateMember(member model.Member) (sql.Result, error) {
+func (db *DefaultLocalDatabase) UpdateMember(member model.Member) (sql.Result, error) {
 	query := fmt.Sprintf(
 		`UPDATE %s SET name = '%s' WHERE student_id = '%s'`,
 		db.memberTable,
@@ -120,7 +131,7 @@ func (db DefaultLocalDatabase) UpdateMember(member model.Member) (sql.Result, er
 	return db.execDb(query)
 }
 
-func (db DefaultLocalDatabase) DeleteMember(studentId string) (sql.Result, error) {
+func (db *DefaultLocalDatabase) DeleteMember(studentId string) (sql.Result, error) {
 	query := fmt.Sprintf(
 		`DELETE FROM %s WHERE student_id = '%s'`,
 		db.memberTable,
@@ -130,7 +141,58 @@ func (db DefaultLocalDatabase) DeleteMember(studentId string) (sql.Result, error
 	return db.execDb(query)
 }
 
-func (db DefaultLocalDatabase) createMemberTable() {
+func (db *DefaultLocalDatabase) TakeLog(log model.Log) (sql.Result, error) {
+	query := fmt.Sprintf(
+		`INSERT INTO %s (student_id, event, date) VALUES('%s', '%s', '%s')`,
+		db.logTable,
+		log.StudentId,
+		log.Event.Value(),
+		log.Date.ToString(),
+	)
+
+	return db.execDb(query)
+}
+
+func (db *DefaultLocalDatabase) GetAllLogs() []model.Log {
+	query := fmt.Sprintf(
+		`SELECT * FROM %s`, db.logTable,
+	)
+
+	var d dto
+	var logs []model.Log
+
+	rows, _ := db.query(query)
+
+	for rows.Next() {
+		rows.Scan(&d.Id, &d.StudentId, &d.Event, &d.Date)
+
+		logs = append(logs, d.toModel())
+	}
+
+	return logs
+}
+
+func (db *DefaultLocalDatabase) GetLogById(id int) *model.Log {
+	query := fmt.Sprintf(
+		`SELECT * FROM %s WHERE id = "%d"`,
+		db.logTable,
+		id,
+	)
+
+	var d dto
+
+	rows, _ := db.query(query)
+	for rows.Next() {
+		rows.Scan(&d.Id, &d.StudentId, &d.Event, &d.Date)
+
+		log := d.toModel()
+		return &log
+	}
+
+	return nil
+}
+
+func (db *DefaultLocalDatabase) createMemberTable() {
 	query := fmt.Sprintf(
 		`CREATE TABLE IF NOT EXISTS %s (student_id string PRIMARY KEY, name string NOT NULL)`,
 		db.memberTable,
@@ -139,19 +201,26 @@ func (db DefaultLocalDatabase) createMemberTable() {
 	db.execDb(query)
 }
 
-func (db DefaultLocalDatabase) createLogTable() {
+func (db *DefaultLocalDatabase) createLogTable() {
 	query := fmt.Sprintf(
-		`CREATE TABLE IF NOT EXISTS %s (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id STRING NOT NULL, event STRING NOT NULL, datatime STRING NOT NULL)`,
+		`CREATE TABLE IF NOT EXISTS %s (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id STRING NOT NULL, event STRING NOT NULL, date STRING NOT NULL)`,
 		db.logTable,
 	)
 
 	db.execDb(query)
 }
 
-func (db DefaultLocalDatabase) execDb(query string) (sql.Result, error) {
+func (db *DefaultLocalDatabase) execDb(query string) (sql.Result, error) {
 	return db.database.Exec(query)
 }
 
-func (db DefaultLocalDatabase) query(query string) (*sql.Rows, error) {
+func (db *DefaultLocalDatabase) query(query string) (*sql.Rows, error) {
 	return db.database.Query(query)
+}
+
+func (d dto) toModel() model.Log {
+	event, _ := model.ParseEvent(d.Event)
+	date, _ := model.ParseDate(d.Date)
+
+	return model.Log{Id: d.Id, StudentId: d.StudentId, Event: event, Date: date}
 }
