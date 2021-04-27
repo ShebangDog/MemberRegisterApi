@@ -16,24 +16,34 @@ type (
 		DeleteMember(studentId string) (sql.Result, error)
 		TakeLog(log model.Log) (sql.Result, error)
 		GetAllLogs() []model.Log
+		GetAllAccess() []model.Access
+		GetAccessById(studentId string) *model.Access
+		UpdateAccess(access model.Access)
+		RegisterAccess(access model.Access)
 	}
 
 	DefaultLocalDatabase struct {
 		database    *sql.DB
 		memberTable string
 		logTable    string
+		accessTable string
 		tables      []string
 	}
 
 	//Event(interface)の都合でScanできないためdtoを使用してmodelへ変換する
 	//row => modelができないからdtoを使用してmodelへ変換する
-	//row => dto => model
+	//row => logDTO => model
 	//https://stackoverflow.com/questions/57827120/golang-sql-scan-interface-scan-into-interface-field-type
-	dto struct {
+	logDTO struct {
 		Id        string
 		StudentId string
 		Event     string
 		Date      string
+	}
+
+	accessDTO struct {
+		StudentId string
+		Event     string
 	}
 )
 
@@ -52,14 +62,17 @@ func NewLocalDatabase() *DefaultLocalDatabase {
 
 	instance.memberTable = "member"
 	instance.logTable = "log"
+	instance.accessTable = "access"
 
 	instance.tables = []string{
 		instance.logTable,
 		instance.memberTable,
+		instance.accessTable,
 	}
 
 	instance.createMemberTable()
 	instance.createLogTable()
+	instance.createAccessTable()
 
 	return instance
 }
@@ -158,7 +171,7 @@ func (db *DefaultLocalDatabase) GetAllLogs() []model.Log {
 		`SELECT * FROM %s`, db.logTable,
 	)
 
-	var d dto
+	var d logDTO
 	var logs []model.Log
 
 	rows, _ := db.query(query)
@@ -179,7 +192,7 @@ func (db *DefaultLocalDatabase) GetLogById(id int) *model.Log {
 		id,
 	)
 
-	var d dto
+	var d logDTO
 
 	rows, _ := db.query(query)
 	for rows.Next() {
@@ -190,6 +203,66 @@ func (db *DefaultLocalDatabase) GetLogById(id int) *model.Log {
 	}
 
 	return nil
+}
+
+func (db *DefaultLocalDatabase) GetAllAccess() []model.Access {
+	query := fmt.Sprintf(
+		`SELECT * FROM %s`,
+		db.accessTable,
+	)
+
+	var accesses []model.Access
+	var d accessDTO
+
+	rows, _ := db.query(query)
+	for rows.Next() {
+		rows.Scan(&d.StudentId, &d.Event)
+		accesses = append(accesses, d.toModel())
+	}
+
+	return accesses
+}
+
+func (db *DefaultLocalDatabase) GetAccessById(studentId string) *model.Access {
+	query := fmt.Sprintf(
+		`SELECT * FROM %s WHERE student_id = '%s'`,
+		db.accessTable,
+		studentId,
+	)
+
+	var d accessDTO
+
+	rows, _ := db.query(query)
+	for rows.Next() {
+		rows.Scan(&d.StudentId, &d.Event)
+		access := d.toModel()
+
+		return &access
+	}
+
+	return nil
+}
+
+func (db *DefaultLocalDatabase) UpdateAccess(access model.Access) {
+	query := fmt.Sprintf(
+		`UPDATE %s SET event = '%s' WHERE student_id = '%s'`,
+		db.accessTable,
+		access.Event.Value(),
+		access.StudentId,
+	)
+
+	db.execDb(query)
+}
+
+func (db *DefaultLocalDatabase) RegisterAccess(access model.Access) {
+	query := fmt.Sprintf(
+		`INSERT INTO %s (student_id, event) VALUES('%s', '%s')`,
+		db.accessTable,
+		access.StudentId,
+		access.Event.Value(),
+	)
+
+	db.execDb(query)
 }
 
 func (db *DefaultLocalDatabase) createMemberTable() {
@@ -210,6 +283,14 @@ func (db *DefaultLocalDatabase) createLogTable() {
 	db.execDb(query)
 }
 
+func (db *DefaultLocalDatabase) createAccessTable() {
+	query := fmt.Sprintf(
+		`CREATE TABLE IF NOT EXISTS %s (student_id STRING PRIMARY KEY, event STRING NOT NULL)`, db.accessTable,
+	)
+
+	db.execDb(query)
+}
+
 func (db *DefaultLocalDatabase) execDb(query string) (sql.Result, error) {
 	return db.database.Exec(query)
 }
@@ -218,9 +299,15 @@ func (db *DefaultLocalDatabase) query(query string) (*sql.Rows, error) {
 	return db.database.Query(query)
 }
 
-func (d dto) toModel() model.Log {
+func (d logDTO) toModel() model.Log {
 	event, _ := model.ParseEvent(d.Event)
 	date, _ := model.ParseDate(d.Date)
 
 	return model.Log{Id: d.Id, StudentId: d.StudentId, Event: event, Date: date}
+}
+
+func (d accessDTO) toModel() model.Access {
+	event, _ := model.ParseEvent(d.Event)
+
+	return model.Access{StudentId: d.StudentId, Event: event}
 }

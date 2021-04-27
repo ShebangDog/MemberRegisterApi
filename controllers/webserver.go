@@ -29,6 +29,12 @@ func StartWebServer() error {
 	router.HandleFunc("/logs", takeLog).Methods("POST")
 	router.HandleFunc("/logs", fetchAllLogs).Methods("GET")
 
+	router.HandleFunc("/accesses", fetchAllAccesses).Methods("GET")
+	router.HandleFunc("/accesses", registerAccess).Methods("POST")
+
+	router.HandleFunc("/accesses/{student_id}", fetchAccessById).Methods("GET")
+	router.HandleFunc("/accesses/{student_id}", updateAccess).Methods("PUT")
+
 	return http.ListenAndServe(fmt.Sprintf(":%d", 8080), router)
 }
 
@@ -138,4 +144,50 @@ func takeLog(w http.ResponseWriter, r *http.Request) {
 		print(result, err.Error())
 		return
 	}
+}
+
+func registerAccess(w http.ResponseWriter, r *http.Request) {
+	var access model.Access
+
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	err := json.Unmarshal(reqBody, &access)
+	if err != nil {
+		return
+	}
+
+	localDatabase.RegisterAccess(access)
+}
+
+func updateAccess(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	key := vars["student_id"]
+
+	var access model.Access
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	if err := json.Unmarshal(reqBody, &access); err != nil {
+		return
+	}
+
+	if key != access.StudentId {
+		fmt.Fprintf(w, "path(%s) and body(%s) is not same", key, access.StudentId)
+		return
+	}
+
+	localDatabase.UpdateAccess(access)
+}
+
+func fetchAccessById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	key := vars["student_id"]
+
+	access := localDatabase.GetAccessById(key)
+
+	json.NewEncoder(w).Encode(access)
+}
+
+func fetchAllAccesses(w http.ResponseWriter, r *http.Request) {
+	accesses := localDatabase.GetAllAccess()
+
+	w.Header().Set("Contents-Type", "application-json")
+	json.NewEncoder(w).Encode(accesses)
 }
