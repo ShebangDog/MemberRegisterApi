@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-var localDatabase data.LocalDatasource = data.NewLocalDatabase()
+var localDatabase data.LocalDatasource = data.NewLocalMemory()
 
 func StartWebServer() error {
 	fmt.Println("Deploy REST API Server")
