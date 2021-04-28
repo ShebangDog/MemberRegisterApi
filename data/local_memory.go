@@ -19,6 +19,12 @@ func NewLocalMemory() *DefaultLocalMemory {
 }
 
 func (m *DefaultLocalMemory) SignUp(member model.Member) error {
+	for _, mem := range m.members {
+		if mem.StudentId == member.StudentId {
+			return errors.New(fmt.Sprintf("%s is already register", member.StudentId))
+		}
+	}
+
 	m.members = append(m.members, member)
 
 	return nil
@@ -86,18 +92,28 @@ func (m *DefaultLocalMemory) GetAccessById(studentId string) *model.Access {
 	return &m.accesses[*index]
 }
 
-func (m *DefaultLocalMemory) UpdateAccess(access model.Access) {
+func (m *DefaultLocalMemory) UpdateAccess(access model.Access) error {
 	index := getAccessIndexById(m.accesses, access.StudentId)
 	if index == nil {
-		return
+		return errors.New(fmt.Sprintf("%s is not exist in access", access.StudentId))
 	}
 
 	target := &m.accesses[*index]
 	*target = access
+
+	return nil
 }
 
-func (m *DefaultLocalMemory) RegisterAccess(access model.Access) {
+func (m *DefaultLocalMemory) RegisterAccess(access model.Access) error {
+	for _, acc := range m.accesses {
+		if acc.StudentId == access.StudentId {
+			return errors.New(fmt.Sprintf("%s is already register", access.StudentId))
+		}
+	}
+
 	m.accesses = append(m.accesses, access)
+
+	return nil
 }
 
 func getMemberIndexById(members []model.Member, studentId string) *int {

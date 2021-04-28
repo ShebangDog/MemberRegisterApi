@@ -12,6 +12,6 @@ type LocalDatasource interface {
 	GetAllLogs() []model.Log
 	GetAllAccess() []model.Access
 	GetAccessById(studentId string) *model.Access
-	UpdateAccess(access model.Access)
-	RegisterAccess(access model.Access)
+	UpdateAccess(access model.Access) error
+	RegisterAccess(access model.Access) error
 }

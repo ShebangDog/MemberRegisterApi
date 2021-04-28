@@ -233,7 +233,7 @@ func (db *DefaultLocalDatabase) GetAccessById(studentId string) *model.Access {
 	return nil
 }
 
-func (db *DefaultLocalDatabase) UpdateAccess(access model.Access) {
+func (db *DefaultLocalDatabase) UpdateAccess(access model.Access) error {
 	query := fmt.Sprintf(
 		`UPDATE %s SET event = '%s' WHERE student_id = '%s'`,
 		db.accessTable,
@@ -241,10 +241,15 @@ func (db *DefaultLocalDatabase) UpdateAccess(access model.Access) {
 		access.StudentId,
 	)
 
-	db.execDb(query)
+	_, err := db.execDb(query)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (db *DefaultLocalDatabase) RegisterAccess(access model.Access) {
+func (db *DefaultLocalDatabase) RegisterAccess(access model.Access) error {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (student_id, event) VALUES('%s', '%s')`,
 		db.accessTable,
@@ -252,7 +257,12 @@ func (db *DefaultLocalDatabase) RegisterAccess(access model.Access) {
 		access.Event.Value(),
 	)
 
-	db.execDb(query)
+	_, err := db.execDb(query)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (db *DefaultLocalDatabase) createMemberTable() {
