@@ -23,7 +23,7 @@ func ParseDate(str string) (Date, error) {
 
 	stringsToInts := func(strings []string) ([]int, error) {
 		var dates []int
-		for _, str := range dateStr {
+		for _, str := range strings {
 			parseInt, err := strconv.ParseInt(str, 10, 64)
 			if err != nil {
 				return nil, err
