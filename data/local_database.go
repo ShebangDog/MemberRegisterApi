@@ -8,20 +8,6 @@ import (
 )
 
 type (
-	LocalDatabase interface {
-		SignUp(member model.Member) (sql.Result, error)
-		GetAllMembers() []model.Member
-		GetMemberById(studentId string) *model.Member
-		UpdateMember(member model.Member) (sql.Result, error)
-		DeleteMember(studentId string) (sql.Result, error)
-		TakeLog(log model.Log) (sql.Result, error)
-		GetAllLogs() []model.Log
-		GetAllAccess() []model.Access
-		GetAccessById(studentId string) *model.Access
-		UpdateAccess(access model.Access)
-		RegisterAccess(access model.Access)
-	}
-
 	DefaultLocalDatabase struct {
 		database    *sql.DB
 		memberTable string
@@ -77,7 +63,7 @@ func NewLocalDatabase() *DefaultLocalDatabase {
 	return instance
 }
 
-func (db *DefaultLocalDatabase) SignUp(member model.Member) (sql.Result, error) {
+func (db *DefaultLocalDatabase) SignUp(member model.Member) error {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (student_id, name) VALUES("%s", "%s") `,
 		db.memberTable,
@@ -85,7 +71,8 @@ func (db *DefaultLocalDatabase) SignUp(member model.Member) (sql.Result, error) 
 		member.Name,
 	)
 
-	return db.execDb(query)
+	_, err := db.execDb(query)
+	return err
 }
 
 func (db *DefaultLocalDatabase) GetAllMembers() []model.Member {
@@ -133,7 +120,7 @@ func (db *DefaultLocalDatabase) GetMemberById(studentId string) *model.Member {
 	return nil
 }
 
-func (db *DefaultLocalDatabase) UpdateMember(member model.Member) (sql.Result, error) {
+func (db *DefaultLocalDatabase) UpdateMember(member model.Member) error {
 	query := fmt.Sprintf(
 		`UPDATE %s SET name = '%s' WHERE student_id = '%s'`,
 		db.memberTable,
@@ -141,20 +128,22 @@ func (db *DefaultLocalDatabase) UpdateMember(member model.Member) (sql.Result, e
 		member.StudentId,
 	)
 
-	return db.execDb(query)
+	_, err := db.execDb(query)
+	return err
 }
 
-func (db *DefaultLocalDatabase) DeleteMember(studentId string) (sql.Result, error) {
+func (db *DefaultLocalDatabase) DeleteMember(studentId string) error {
 	query := fmt.Sprintf(
 		`DELETE FROM %s WHERE student_id = '%s'`,
 		db.memberTable,
 		studentId,
 	)
 
-	return db.execDb(query)
+	_, err := db.execDb(query)
+	return err
 }
 
-func (db *DefaultLocalDatabase) TakeLog(log model.Log) (sql.Result, error) {
+func (db *DefaultLocalDatabase) TakeLog(log model.Log) error {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (student_id, event, date) VALUES('%s', '%s', '%s')`,
 		db.logTable,
@@ -163,7 +152,8 @@ func (db *DefaultLocalDatabase) TakeLog(log model.Log) (sql.Result, error) {
 		log.Date.ToString(),
 	)
 
-	return db.execDb(query)
+	_, err := db.execDb(query)
+	return err
 }
 
 func (db *DefaultLocalDatabase) GetAllLogs() []model.Log {

@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-var localDatabase data.LocalDatabase = data.NewLocalDatabase()
+var localDatabase data.LocalDatasource = data.NewLocalDatabase()
 
 func StartWebServer() error {
 	fmt.Println("Deploy REST API Server")
@@ -69,7 +69,7 @@ func signUpMember(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	if _, err := localDatabase.SignUp(member); err != nil {
+	if err := localDatabase.SignUp(member); err != nil {
 		fmt.Fprintf(w, "%s is already exists member", member.StudentId)
 
 		return
@@ -97,7 +97,7 @@ func updateMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := localDatabase.UpdateMember(member); err != nil {
+	if err := localDatabase.UpdateMember(member); err != nil {
 		log.Fatal(err)
 	}
 
@@ -111,7 +111,7 @@ func deleteMember(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["student_id"]
 
-	if _, err := localDatabase.DeleteMember(key); err != nil {
+	if err := localDatabase.DeleteMember(key); err != nil {
 		log.Fatal(err)
 	}
 
@@ -140,8 +140,8 @@ func takeLog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if result, err := localDatabase.TakeLog(l); err != nil {
-		print(result, err.Error())
+	if err := localDatabase.TakeLog(l); err != nil {
+		print(err.Error())
 		return
 	}
 }
