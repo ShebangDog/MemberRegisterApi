@@ -14,6 +14,9 @@ type DefaultLocalMemory struct {
 
 func NewLocalMemory() *DefaultLocalMemory {
 	instance := &DefaultLocalMemory{}
+	instance.members = []model.Member{}
+	instance.logs = []model.Log{}
+	instance.accesses = []model.Access{}
 
 	return instance
 }
