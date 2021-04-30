@@ -46,6 +46,18 @@ func (m *DefaultLocalMemory) GetMemberById(studentId string) *model.Member {
 	return &m.members[*index]
 }
 
+func (m *DefaultLocalMemory) GetMemberByAliasIdSource(aliasIdSource string) *model.Member {
+	hashedIdm := model.HashIdm(aliasIdSource)
+
+	for _, member := range m.members {
+		if member.AliasId == hashedIdm {
+			return &member
+		}
+	}
+
+	return nil
+}
+
 func (m *DefaultLocalMemory) UpdateMember(member model.Member) error {
 	index := getMemberIndexById(m.members, member.StudentId)
 	if index == nil {

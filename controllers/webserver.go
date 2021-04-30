@@ -58,7 +58,19 @@ func fetchMemberById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["student_id"]
 
-	member := localDatabase.GetMemberById(key)
+	fetchers := []func(key string) *model.Member{
+		localDatabase.GetMemberById,
+		localDatabase.GetMemberByAliasIdSource,
+	}
+
+	var member *model.Member
+	for _, f := range fetchers {
+		if result := f(key); result != nil {
+			member = result
+			break
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 
 	json.NewEncoder(w).Encode(member)
