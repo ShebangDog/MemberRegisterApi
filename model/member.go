@@ -47,6 +47,10 @@ type HashedIdm struct {
 }
 
 func HashIdm(idm string) HashedIdm {
+	if idm == "" {
+		return HashedIdm{Value: "none"}
+	}
+
 	h := sha256.New()
 	h.Write([]byte(idm))
 	aliasId := fmt.Sprintf("%x", h.Sum(nil))
