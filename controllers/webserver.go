@@ -184,6 +184,8 @@ func fetchAccessById(w http.ResponseWriter, r *http.Request) {
 
 	access := localDatabase.GetAccessById(key)
 
+	w.Header().Set("Contents-Type", "application-json")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 	json.NewEncoder(w).Encode(access)
 }
 
@@ -191,5 +193,6 @@ func fetchAllAccesses(w http.ResponseWriter, r *http.Request) {
 	accesses := localDatabase.GetAllAccess()
 
 	w.Header().Set("Contents-Type", "application-json")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 	json.NewEncoder(w).Encode(accesses)
 }
