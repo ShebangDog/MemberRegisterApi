@@ -180,6 +180,7 @@
 * **Success Response:**
 
     * **Code:** 200 <br />
+      **Content:** `{ student_id : "student-id", alias-id : "alias-id", name : "name" }`
 
 * **Error Response:**
 
@@ -191,7 +192,7 @@
     const student_id = "student-id"
   
     fetch('http://localhost:8080/accesses/' + student_id, {
-        method: 'POST',
+        method: 'GET',
         headers: {
             'Content-Type': 'application/json',
         }
@@ -266,6 +267,10 @@
 * **Success Response:**
 
     * **Code:** 200 <br />
+      **Content:** ```[
+        {id: "0", student_id: "e1n20021", event: "register", date: "20/04/21-01:14:33"}, 
+        {id: "1", student_id: "e1n20021", event: "entry",    date: "20/04/21-01:14:40"}
+      ]```
 
 * **Error Response:**
 
