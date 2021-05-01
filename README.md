@@ -95,18 +95,13 @@
 * **Sample Call:**
 
   ```
-    const data = {
-        student_id : "student-id"
-        alias_id : "felica-idm"
-        name : "name"
-    }
+    const student_id = "student-id"
   
-    fetch('http://localhost:8080/members/' + data.student_id, {
+    fetch('http://localhost:8080/members/' + student_id, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
     })
   ```
 
@@ -193,18 +188,13 @@
 * **Sample Call:**
 
   ```
-    const data = {
-        student_id : "student-id"
-        alias_id : "felica-idm"
-        name : "name"
-    }
+    const student_id = "student-id"
   
-    fetch('http://localhost:8080', {
+    fetch('http://localhost:8080/accesses/' + student_id, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        }
     })
   ```
 
@@ -242,12 +232,12 @@
 
   ```
     const data = {
-        student_id : "student-id"
-        alias_id : "felica-idm"
-        name : "name"
+      student_id : "student-id",
+      event : "event",
+      date : "20/04/23-12:02:22"
     }
   
-    fetch('http://localhost:8080', {
+    fetch('http://localhost:8080/logs', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -284,18 +274,11 @@
 * **Sample Call:**
 
   ```
-    const data = {
-        student_id : "student-id"
-        alias_id : "felica-idm"
-        name : "name"
-    }
-  
-    fetch('http://localhost:8080', {
-        method: 'POST',
+    fetch('http://localhost:8080/logs', {
+        method: 'GET',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
     })
   ```
 
